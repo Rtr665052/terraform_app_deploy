@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infrahash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infrahash
+  template:
+    metadata:
+      labels:
+        app: infrahash
+    spec:
+      securityContext:
+        fsGroup: 1000    # <--- FIX for PVC write access
+      containers:
+        - name: infrahash
+          image: infrahash:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: infrahash-storage

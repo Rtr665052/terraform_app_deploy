@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>InfraHash</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f5; /* Light gray background */
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        .notice {
+            background-color: #ffebcc; /* Light yellow background */
+            border: 1px solid #ffcc00; /* Yellow border */
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .column {
+            width: 48%;
+        }
+        form {
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #loading {
+            display: none;
+            font-size: 18px;
+            color: green;
+        }
+        #progress {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+    <script>
+        function showLoading() {
+            document.getElementById("loading").style.display = "block";
+        }
+        function filterTable() {
+            const filter = document.getElementById("search").value.toLowerCase();
+            const rows = document.querySelectorAll("table tbody tr");
+            rows.forEach(row => {
+                const password = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+                const hash = row.querySelector("td:nth-child(3)").textContent.toLowerCase();
+                if (password.includes(filter) || hash.includes(filter)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>InfraHash</h1>
+    <div class="container">
+        <div class="notice">
+            <p><strong>Note:</strong> This application only supports <strong>SHA-256 hashing</strong>. It attempts to crack passwords up to <strong>5 characters in length</strong>.</p>
+        </div>
+        <div class="row">
+            <div class="column">
+                <h2>Password Hash</h2>
+                <form method="POST" action="/hash" onsubmit="showLoading()">
+                    <input type="text" name="password" placeholder="Enter password to hash" required>
+                    <button type="submit">Generate Hash</button>
+                </form>
+                <p id="loading">Processing... Please wait.</p>
+                {% if hash_result %}
+                    <h3>Hash Result: {{ hash_result }}</h3>
+                {% endif %}
+            </div>
+            <div class="column">
+                <h2>Crack Password Hash</h2>
+                <form method="POST" action="/crack" onsubmit="showLoading()">
+                    <input type="text" name="hash" placeholder="Enter hash to crack" required>
+                    <button type="submit">Crack Hash</button>
+                </form>
+                <p id="loading">Processing... Please wait.</p>
+                <div id="progress">
+                    {% if crack_result %}
+                        <h3>Cracked Password: {{ crack_result }}</h3>
+                    {% endif %}
+                    {% if attempt_count and max_attempts %}
+                        <p>Attempts: {{ attempt_count }} / {{ max_attempts }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <h2>Stored Passwords</h2>
+        <input type="text" id="search" placeholder="Search passwords or hashes" onkeyup="filterTable()">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Password</th>
+                    <th>Hash</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.password }}</td>
+                    <td>{{ row.hash }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
